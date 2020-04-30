@@ -48,17 +48,29 @@ def index(request):
             context['message'] = 'get ticket table..'
             for key, value in ticket_tables.items():
                 ticket_tables[key] = let_the_first_row_be_column_title(value)
-            df_list = []
-            for ticket_number in list(ticket_tables[ticket_type]['單號']):
-                ticket_detail_response = get_ticket_detail_with_given_ticket_number(session=session, chracter=chracters[chracter_choose], ticket_number=ticket_number)
-                df_ticket_detail = get_dataframe_list_by_reading_html(ticket_detail_response.text)[0]
-                df_ticket_detail = let_the_first_row_be_column_title(df_ticket_detail)
-                df_ticket_detail = df_ticket_detail.assign(單號=ticket_number)
-                df_list += [df_ticket_detail]
-            df_left = pandas.concat(df_list)
-            df_right = ticket_tables[ticket_type]
-            db_joined = pandas.merge(df_left, df_right, on='單號', how='outer', suffixes=('', '-細項'))
-            context['result_html_ticket_handling'] = db_joined.to_html()
+            context['results'] = {}
+            if ticket_type != 'all':
+                df_joined = join_ticket_detail_with_ticket_list(
+                    ticket_numbers=list(ticket_tables[ticket_type]['單號']),
+                    session=session,
+                    character=chracters[chracter_choose],
+                    ticket_tables=ticket_tables,
+                    ticket_type=ticket_type
+                )
+                context['results'][ticket_type] = df_joined.to_html(justify='left')
+            else:
+                for ticket_type, value in ticket_tables.items():
+                    try:
+                        df_joined = join_ticket_detail_with_ticket_list(
+                            ticket_numbers=list(ticket_tables[ticket_type]['單號']),
+                            session=session,
+                            character=chracters[chracter_choose],
+                            ticket_tables=ticket_tables,
+                            ticket_type=ticket_type
+                        )
+                        context['results'][ticket_type] = df_joined.to_html(justify='left')
+                    except:
+                        pass
             context['message'] = 'Finished.'
         except:
             pass
@@ -104,3 +116,20 @@ def get_ticket_detail_with_given_ticket_number(session, chracter, ticket_number)
     }
     http_response = session.post(url=post_url, data=post_data)
     return http_response
+
+def join_ticket_detail_with_ticket_list(ticket_numbers, session, character, ticket_tables, ticket_type):
+    df_list = []
+    for ticket_number in ticket_numbers:
+        ticket_detail_response = get_ticket_detail_with_given_ticket_number(
+            session=session,
+            chracter=character,
+            ticket_number=ticket_number
+        )
+        df_ticket_detail = get_dataframe_list_by_reading_html(ticket_detail_response.text)[0]
+        df_ticket_detail = let_the_first_row_be_column_title(df_ticket_detail)
+        df_ticket_detail = df_ticket_detail.assign(單號=ticket_number)
+        df_list += [df_ticket_detail]
+    df_left = ticket_tables[ticket_type]
+    df_right = pandas.concat(df_list)
+    df_joined = pandas.merge(df_left, df_right, on='單號', how='outer', suffixes=('', '-細項'))
+    return df_joined

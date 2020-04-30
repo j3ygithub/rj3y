@@ -20,23 +20,26 @@
         </select><br>
         <label for="ticket_type">Ticket Type:</label><br>
         <select id="ticket_type" name="ticket_type">
-            <option value="handling">處理中派工單</option>
+            <option value="all">全部</option>
             <option value="preordered">預先通知派工單</option>
             <option value="assigned">已轉派派工單</option>
+            <option value="handling">處理中派工單</option>
             <option value="finished">完成待結派工單</option>
             <option value="special">特殊申請派工單</option>
         </select><br>
         <br><input type="submit">
-    </form>
+    </form><br>
 
-    <br><label>Output:</label><br><br>
+    <label>Output:</label><br><br>
     {% if message %}
     <label>Message:</label>
     {{ message }}<br><br>
     {% endif %}
-    {% if result_html_ticket_handling %}
-    <label>處理中派工單</label>
-    {{ result_html_ticket_handling|safe }}
+    {% if results %}
+        {% for key, value in results.items %}
+            {{ key }}
+            {{ value|safe }}
+        {% endfor %}
     {% endif %}
 </body>
 
