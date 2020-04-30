@@ -2,6 +2,29 @@
     <label for="account">Account:</label><br>
     <input type="text" id="account" name="account"><br>
     <label for="password">Password:</label><br>
-    <input type="text" id="password" name="password"><br><br>
-    <input type="submit">
+    <input type="text" id="password" name="password"><br>
+    <label for="character">Character:</label><br>
+    <select id="character" name="character">
+        <option value="cloud">雲端</option>
+        <option value="self">個人</option>
+    </select><br>
+    <label for="ticket_type">Ticket Type:</label><br>
+    <select id="ticket_type" name="ticket_type">
+        <option value="handling">處理中派工單</option>
+        <option value="preordered">預先通知派工單</option>
+        <option value="assigned">已轉派派工單</option>
+        <option value="finished">完成待結派工單</option>
+        <option value="special">特殊申請派工單</option>
+    </select><br>
+    <br><input type="submit">
 </form>
+
+<label>Output:</label><br><br>
+{% if message %}
+    <label>Message:</label>
+    {{ message }}<br><br>
+{% endif %}
+{% if result_html_ticket_handling %}
+    <label>處理中派工單</label>
+    {{ result_html_ticket_handling|safe }}
+{% endif %}

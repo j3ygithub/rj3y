@@ -6,30 +6,29 @@ import pandas
 
 def index(request):
 
+    context = {
+        'message': '',
+    }
     if not request.POST:
-        return render(request, 'ticket/index.html')
+        return render(request, 'ticket/index.html', context)
     else:
-        context = {
-            'error_message': 'Sorry, somthing is wrong. ',
-            'result_html': None,
-        }
         try:
+            context['message'] = 'start..'
             # initial input
             account = request.POST.get('account')
             password = request.POST.get('password')
             session = requests.session()
-            chracter_choose = 'cloud' # could choose "cloud" or "yourself"
-            ticket_type = 'handling'
+            chracter_choose = request.POST.get('character') # could choose "cloud" or "yourself"
+            ticket_type = request.POST.get('ticket_type')
             search_column = 'disp_seq'
             query_string = ''
             max_count = None
             chracters = {
                 'cloud': '20',
-                'yourself': account,
+                'self': account,
             }
-            context['error_message'] += 'Initial input is done.'
-
-            login_with_given_session(account=account, password=password, session=session)
+            response_login = login_with_given_session(account=account, password=password, session=session)
+            context['message'] = 'login..'
             search_http_response = search_on_dashboard_terminal(
                 session=session,
                 character=chracters[chracter_choose],
@@ -46,6 +45,7 @@ def index(request):
                 'finished': ticket_tables[5],
                 'special': ticket_tables[6],
             }
+            context['message'] = 'get ticket table..'
             for key, value in ticket_tables.items():
                 ticket_tables[key] = let_the_first_row_be_column_title(value)
             df_list = []
@@ -58,10 +58,11 @@ def index(request):
             df_left = pandas.concat(df_list)
             df_right = ticket_tables[ticket_type]
             db_joined = pandas.merge(df_left, df_right, on='單號', how='outer', suffixes=('', '-細項'))
-            context['result_html'] = db_joined.to_html()
+            context['result_html_ticket_handling'] = db_joined.to_html()
+            context['message'] = 'Finished.'
         except:
             pass
-        return render(request, 'ticket/summary.html', context)
+        return render(request, 'ticket/index.html', context)
 
 def login_with_given_session(account, password, session):
     post_url = 'http://202.3.168.17:8080/login_check.jsp'
