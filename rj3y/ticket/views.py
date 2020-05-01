@@ -1,6 +1,7 @@
 from django.shortcuts import render
 import requests
 import pandas
+from bs4 import BeautifulSoup
 # Create your views here.
 
 
@@ -20,6 +21,7 @@ def index(request):
             session = requests.session()
             chracter_choose = request.POST.get('character') # could choose "cloud" or "yourself"
             ticket_type = request.POST.get('ticket_type')
+            has_file_url = (request.POST.get('has_file_url') == 'true')
             search_column = 'disp_seq'
             query_string = ''
             max_count = None
@@ -47,9 +49,15 @@ def index(request):
             }
             context['message'] = 'get ticket table..'
             for key, value in ticket_tables.items():
-                ticket_tables[key] = let_the_first_row_be_column_title(value)
+                value = let_the_first_row_be_column_title(value)
+                value = clean_the_column_of_ticket_number(value)
+                ticket_tables[key] = value
             context['results'] = {}
             if ticket_type != 'all':
+                if has_file_url:
+                    ticket_number_list = list(ticket_tables[ticket_type]['單號'])
+                    urls = [ get_ticket_file_url_with_given_ticket_number(ticket_number=ticket, session=session) for ticket in ticket_number_list ]
+                    ticket_tables[ticket_type] = ticket_tables[ticket_type].assign(建置單檔案=urls)
                 df_joined = join_ticket_detail_with_ticket_list(
                     ticket_numbers=list(ticket_tables[ticket_type]['單號']),
                     session=session,
@@ -60,6 +68,13 @@ def index(request):
                 context['results'][ticket_type] = df_joined.to_html(justify='left')
             else:
                 for ticket_type, value in ticket_tables.items():
+                    try:
+                        if has_file_url:
+                            ticket_number_list = list(ticket_tables[ticket_type]['單號'])
+                            urls = [ get_ticket_file_url_with_given_ticket_number(ticket_number=ticket, session=session) for ticket in ticket_number_list ]
+                            ticket_tables[ticket_type] = ticket_tables[ticket_type].assign(建置單檔案=urls)
+                    except:
+                        pass
                     try:
                         df_joined = join_ticket_detail_with_ticket_list(
                             ticket_numbers=list(ticket_tables[ticket_type]['單號']),
@@ -106,6 +121,11 @@ def let_the_first_row_be_column_title(dataframe):
     new_dataframe.columns = dataframe.iloc[0]
     return new_dataframe
 
+def clean_the_column_of_ticket_number(dataframe):
+    for index, row in dataframe.iterrows():
+        row['單號'] = row['單號'].replace(' (Delay)', '')
+    return dataframe
+
 def get_ticket_detail_with_given_ticket_number(session, chracter, ticket_number):
     post_url = 'http://202.3.168.17:8080/Disp/retriveDetail.jsp'
     post_data = {
@@ -133,3 +153,21 @@ def join_ticket_detail_with_ticket_list(ticket_numbers, session, character, tick
     df_right = pandas.concat(df_list)
     df_joined = pandas.merge(df_left, df_right, on='單號', how='outer', suffixes=('', '-細項'))
     return df_joined
+
+def get_ticket_file_url_with_given_ticket_number(ticket_number, session):
+    post_url = 'http://202.3.168.17:8080/Disp/DashBoard_Terminal_Detail.jsp'
+    post_data = {
+        'seq_no': ticket_number,
+    }
+    response = session.post(url=post_url, data=post_data)
+    soup = BeautifulSoup(response.text, 'lxml')
+    tag_set = soup.select('body > table > tr:nth-child(2) > td > fieldset > table > tr:nth-child(1) > td > ol > li > input[type=button]:nth-child(1)')
+    if len(tag_set) == 1:
+        tag = tag_set[0]
+    else:
+        tag = None
+    if tag:
+        url = tag['onclick'].split(',')[0].split('"')[1]
+    else:
+        url = ''
+    return url

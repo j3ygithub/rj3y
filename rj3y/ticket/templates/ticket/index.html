@@ -27,6 +27,11 @@
             <option value="finished">完成待結派工單</option>
             <option value="special">特殊申請派工單</option>
         </select><br>
+        <label for="has_file_url">Has File URL:</label><br>
+        <select id="has_file_url" name="has_file_url">
+            <option value="false">否</option>
+            <option value="true">是 (會花費較長時間)</option>
+        </select><br>
         <br><input type="submit">
     </form><br>
 
@@ -36,10 +41,10 @@
     {{ message }}<br><br>
     {% endif %}
     {% if results %}
-        {% for key, value in results.items %}
-            {{ key }}
-            {{ value|safe }}
-        {% endfor %}
+    {% for key, value in results.items %}
+    {{ key }}
+    {{ value|safe }}
+    {% endfor %}
     {% endif %}
 </body>
 
