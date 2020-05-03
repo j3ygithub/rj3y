@@ -80,6 +80,7 @@ def index(request):
                     except:
                         pass
             context['result'] = result
+            context['message'] = 'Finished.'
         except:
             context['message'] = 'Joining ticket list with detail failed.'
         return render(request, 'ticket/index.html', context)
