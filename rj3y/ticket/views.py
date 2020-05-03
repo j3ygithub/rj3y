@@ -17,8 +17,7 @@ def index(request):
             context['message'] = 'start..'
             account = request.POST.get('account')
             password = request.POST.get('password')
-            session = requests.session()
-            chracter_choose = request.POST.get('character')
+            character = request.POST.get('character')
             ticket_type = request.POST.get('ticket_type')
             has_file_url = (request.POST.get('has_file_url') == 'true')
             search_column = 'disp_seq'
