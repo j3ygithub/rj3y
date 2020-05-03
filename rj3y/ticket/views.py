@@ -9,163 +9,167 @@ def index(request):
 
     context = {
         'message': '',
+        'result': None,
     }
     if not request.POST:
         return render(request, 'ticket/index.html', context)
     else:
         try:
-            context['message'] = 'start..'
             account = request.POST.get('account')
+            context['account'] = account
             password = request.POST.get('password')
+            context['password'] = password
             character = request.POST.get('character')
+            context['character'] = request.POST.get('character')
             ticket_type = request.POST.get('ticket_type')
-            has_file_url = (request.POST.get('has_file_url') == 'true')
-            search_column = 'disp_seq'
-            query_string = ''
-            max_count = None
-            chracters = {
-                'cloud': '20',
-                'self': account,
-            }
-            response_login = login_with_given_session(account=account, password=password, session=session)
-            context['message'] = 'login..'
-            search_http_response = search_on_dashboard_terminal(
-                session=session,
-                character=chracters[chracter_choose],
-                search_column=search_column,
-                query_string=query_string,
-                max_count=max_count
-            )
-            ticket_tables = get_dataframe_list_by_reading_html(search_http_response.text)
-            # take the part we want as a dictionary
-            ticket_tables = {
-                'preordered': ticket_tables[2],
-                'assigned': ticket_tables[3],
-                'handling': ticket_tables[4],
-                'finished': ticket_tables[5],
-                'special': ticket_tables[6],
-            }
-            context['message'] = 'get ticket table..'
-            for key, value in ticket_tables.items():
-                value = let_the_first_row_be_column_title(value)
-                value = clean_the_column_of_ticket_number(value)
-                ticket_tables[key] = value
-            context['results'] = {}
-            if ticket_type != 'all':
-                if has_file_url:
-                    ticket_number_list = list(ticket_tables[ticket_type]['單號'])
-                    urls = [ get_ticket_file_url_with_given_ticket_number(ticket_number=ticket, session=session) for ticket in ticket_number_list ]
-                    ticket_tables[ticket_type] = ticket_tables[ticket_type].assign(建置單檔案=urls)
-                df_joined = join_ticket_detail_with_ticket_list(
-                    ticket_numbers=list(ticket_tables[ticket_type]['單號']),
-                    session=session,
-                    character=chracters[chracter_choose],
-                    ticket_tables=ticket_tables,
-                    ticket_type=ticket_type
-                )
-                context['results'][ticket_type] = df_joined.to_html(justify='left')
-            else:
-                for ticket_type, value in ticket_tables.items():
-                    try:
-                        if has_file_url:
-                            ticket_number_list = list(ticket_tables[ticket_type]['單號'])
-                            urls = [ get_ticket_file_url_with_given_ticket_number(ticket_number=ticket, session=session) for ticket in ticket_number_list ]
-                            ticket_tables[ticket_type] = ticket_tables[ticket_type].assign(建置單檔案=urls)
-                    except:
-                        pass
-                    try:
-                        df_joined = join_ticket_detail_with_ticket_list(
-                            ticket_numbers=list(ticket_tables[ticket_type]['單號']),
-                            session=session,
-                            character=chracters[chracter_choose],
-                            ticket_tables=ticket_tables,
-                            ticket_type=ticket_type
-                        )
-                        context['results'][ticket_type] = df_joined.to_html(justify='left')
-                    except:
-                        pass
-            context['message'] = 'Finished.'
+            add_file_url = (request.POST.get('add_file_url') == 'true')
+            join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
+            if character == 'self':
+                character_id = account
+            elif character == 'cloud':
+                character_id = '20'
+            session = login(account=account, password=password)
         except:
-            pass
+            context['message'] = 'Login failed'
+        try:
+            response_dashboard = request_dashboard(session=session, character_id=character_id)
+            ticket_tables = produce_ticket_tables(html=response_dashboard.text)
+            ticket_tables = {key:clean_data(use_first_row_as_title(value)) for key, value in ticket_tables.items()}
+        except:
+            context['message'] = 'Request about http://202.3.168.17:8080/index.jsp failed.'
+        try:
+            if add_file_url and ticket_type != 'all':
+                ticket_tables[ticket_type] = add_column_file_url(ticket_tables[ticket_type], session=session)
+            elif add_file_url and ticket_type == 'all':
+                ticket_tables = {key:add_column_file_url(value, session=session) for key, value in ticket_tables.items()}
+        except:
+            context['message'] = 'Adding file url failed.'
+        try:
+            ticket_detail_tables = {}
+            if join_ticket_detail and ticket_type != 'all':
+                ticket_detail_tables[ticket_type] = produce_ticket_detail_table(session=session, character_id=character_id, dataframe=ticket_tables[ticket_type], ticket_type=ticket_type)
+            elif join_ticket_detail and ticket_type == 'all':
+                ticket_detail_tables = {key:produce_ticket_detail_table(session=session, character_id=character_id, dataframe=value, ticket_type=key) for key, value in ticket_tables.items()}
+        except:
+            context['message'] = 'Request about http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
+        try:
+            result = {}
+            if join_ticket_detail and ticket_type != 'all':
+                left = ticket_tables[ticket_type]
+                right = ticket_detail_tables[ticket_type]
+                joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
+                result[ticket_type] = joined.to_html(justify='left')
+            elif join_ticket_detail and ticket_type == 'all':
+                for key, value in ticket_tables.items():
+                    try:
+                        left = value
+                        right = ticket_detail_tables[key]
+                        joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
+                        result[key] = joined.to_html(justify='left')
+                    except:
+                        pass
+            elif not join_ticket_detail and ticket_type != 'all':
+                left = ticket_tables[ticket_type]
+                if len(left):
+                    result[ticket_type] = left.to_html(justify='left')
+            elif not join_ticket_detail and ticket_type == 'all':
+                for key, value in ticket_tables.items():
+                    try:
+                        left = value
+                        result[key] = left.to_html(justify='left')
+                    except:
+                        pass
+            context['result'] = result
+        except:
+            context['message'] = 'Joining ticket list with detail failed.'
         return render(request, 'ticket/index.html', context)
 
-def login_with_given_session(account, password, session):
-    post_url = 'http://202.3.168.17:8080/login_check.jsp'
-    post_data = {
+def login(account, password):
+    url = 'http://202.3.168.17:8080/login_check.jsp'
+    data = {
         'sess_id': account,
         'sess_password': password,
         'dfForm': 'login.jsp',
     }
-    http_response = session.post(url=post_url, data=post_data)
-    return http_response
+    session = requests.session()
+    response = session.post(url=url, data=data)
+    return session
 
-def search_on_dashboard_terminal(session, character, search_column, query_string, max_count):
-    post_url = 'http://202.3.168.17:8080/Disp/DashBoard_Terminal.jsp?action=search'
-    post_data = {
-        'recordCount': max_count,
-        'searchColumn': search_column,
-        'searchCondition': query_string,
-        'doSearch': 'Search',
-        'character': character,
+def request_dashboard(session, character_id):
+    url = 'http://202.3.168.17:8080/Disp/DashBoard_Terminal.jsp?action=search'
+    data = {
+        'character': character_id,
     }
-    http_response = session.post(url=post_url, data=post_data)
-    return http_response
+    response = session.post(url=url, data=data)
+    return response
 
-def get_dataframe_list_by_reading_html(html):
-    return pandas.read_html(html)
+def produce_ticket_tables(html):
+    dataframes = pandas.read_html(html)
+    # take the part we want to build a dictionary
+    ticket_tables = {
+        'advanced': dataframes[2],
+        'assigned': dataframes[3],
+        'processing': dataframes[4],
+        'finished': dataframes[5],
+        'special': dataframes[6],
+    }
+    return ticket_tables
 
-def let_the_first_row_be_column_title(dataframe):
-    new_dataframe = dataframe[1:]
-    new_dataframe.columns = dataframe.iloc[0]
-    return new_dataframe
+def use_first_row_as_title(dataframe):
+    title = dataframe.iloc[0]
+    dataframe = dataframe[1:]
+    dataframe.columns = title
+    return dataframe
 
-def clean_the_column_of_ticket_number(dataframe):
+def clean_data(dataframe):
     for index, row in dataframe.iterrows():
         row['單號'] = row['單號'].replace(' (Delay)', '')
     return dataframe
 
-def get_ticket_detail_with_given_ticket_number(session, chracter, ticket_number):
-    post_url = 'http://202.3.168.17:8080/Disp/retriveDetail.jsp'
-    post_data = {
-        'method': 'get_Disp_DetailCons',
-        'Disp_Cons_Seq': chracter,
-        'Disp_Grp_Seq': chracter,
-        'Disp_Seq': ticket_number,
-    }
-    http_response = session.post(url=post_url, data=post_data)
-    return http_response
+def add_column_file_url(dataframe, session):
+    file_urls = []
+    for index, row in dataframe.iterrows():
+        file_url = ''
+        try:
+            ticket_number = row['單號']
+            url = 'http://202.3.168.17:8080/Disp/DashBoard_Terminal_Detail.jsp'
+            data = {
+                'seq_no': ticket_number,
+            }
+            response = session.post(url=url, data=data)
+            soup = BeautifulSoup(response.text, 'lxml')
+            tags = soup.select('body > table > tr:nth-child(2) > td > fieldset > table > tr:nth-child(1) > td > ol > li > input[type=button]:nth-child(1)')
+            file_url = tags[0]['onclick'].split(',')[0].split('"')[1]
+        except:
+            pass
+        file_urls.append(file_url)
+    dataframe = dataframe.assign(建置單檔案=file_urls)
+    return dataframe
 
-def join_ticket_detail_with_ticket_list(ticket_numbers, session, character, ticket_tables, ticket_type):
-    df_list = []
-    for ticket_number in ticket_numbers:
-        ticket_detail_response = get_ticket_detail_with_given_ticket_number(
-            session=session,
-            chracter=character,
-            ticket_number=ticket_number
-        )
-        df_ticket_detail = get_dataframe_list_by_reading_html(ticket_detail_response.text)[0]
-        df_ticket_detail = let_the_first_row_be_column_title(df_ticket_detail)
-        df_ticket_detail = df_ticket_detail.assign(單號=ticket_number)
-        df_list += [df_ticket_detail]
-    df_left = ticket_tables[ticket_type]
-    df_right = pandas.concat(df_list)
-    df_joined = pandas.merge(df_left, df_right, on='單號', how='outer', suffixes=('', '-細項'))
-    return df_joined
-
-def get_ticket_file_url_with_given_ticket_number(ticket_number, session):
-    post_url = 'http://202.3.168.17:8080/Disp/DashBoard_Terminal_Detail.jsp'
-    post_data = {
-        'seq_no': ticket_number,
-    }
-    response = session.post(url=post_url, data=post_data)
-    soup = BeautifulSoup(response.text, 'lxml')
-    tag_set = soup.select('body > table > tr:nth-child(2) > td > fieldset > table > tr:nth-child(1) > td > ol > li > input[type=button]:nth-child(1)')
-    if len(tag_set) == 1:
-        tag = tag_set[0]
+def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
+    ticket_detail_dataframes = []
+    for index, row in dataframe.iterrows():
+        try:
+            ticket_number = row['單號']
+            url = 'http://202.3.168.17:8080/Disp/retriveDetail.jsp'
+            method = 'get_Disp_DetailCons'
+            if ticket_type == 'finished':
+                method = 'get_Disp_DetailCons_Finish'
+            data = {
+                'method': method,
+                'Disp_Cons_Seq': character_id,
+                'Disp_Grp_Seq': character_id,
+                'Disp_Seq': ticket_number,
+            }
+            detail_response = session.post(url=url, data=data)
+            ticket_detail_dataframe = pandas.read_html(detail_response.text)[0]
+            ticket_detail_dataframe = use_first_row_as_title(ticket_detail_dataframe)
+            ticket_detail_dataframe = ticket_detail_dataframe.assign(單號=ticket_number)
+            ticket_detail_dataframes.append(ticket_detail_dataframe)
+        except:
+            pass
+    if ticket_detail_dataframes:
+        ticket_detail_table = pandas.concat(ticket_detail_dataframes)
     else:
-        tag = None
-    if tag:
-        url = tag['onclick'].split(',')[0].split('"')[1]
-    else:
-        url = ''
-    return url
+        ticket_detail_table = None
+    return ticket_detail_table

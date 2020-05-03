@@ -2,50 +2,101 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- font Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <title>Join And Print | Ticket</title>
 </head>
 
 <body>
-    <h2>Join And Print | Ticket</h2>
+    <div class="container-fluid" style="font-family: Georgia, 'Times New Roman', Times, serif; padding: 30px;">
+        <div class="row justify-content-md-center">
+            <h1 style="color:dimgrey;">Join And Print | Ticket</h1>
+        </div>
+        <br>
 
-    <form action="" , method="post">{% csrf_token %}
-        <label for="account">Account:</label><br>
-        <input type="text" id="account" name="account"><br>
-        <label for="password">Password:</label><br>
-        <input type="text" id="password" name="password"><br>
-        <label for="character">Character:</label><br>
-        <select id="character" name="character">
-            <option value="cloud">雲端</option>
-            <option value="self">個人</option>
-        </select><br>
-        <label for="ticket_type">Ticket Type:</label><br>
-        <select id="ticket_type" name="ticket_type">
-            <option value="all">全部</option>
-            <option value="preordered">預先通知派工單</option>
-            <option value="assigned">已轉派派工單</option>
-            <option value="handling">處理中派工單</option>
-            <option value="finished">完成待結派工單</option>
-            <option value="special">特殊申請派工單</option>
-        </select><br>
-        <label for="has_file_url">Has File URL:</label><br>
-        <select id="has_file_url" name="has_file_url">
-            <option value="false">否</option>
-            <option value="true">是 (會花費較長時間)</option>
-        </select><br>
-        <br><input type="submit">
-    </form><br>
 
-    <label>Output:</label><br><br>
-    {% if message %}
-    <label>Message:</label>
-    {{ message }}<br><br>
-    {% endif %}
-    {% if results %}
-    {% for key, value in results.items %}
-    {{ key }}
-    {{ value|safe }}
-    {% endfor %}
-    {% endif %}
+
+        <div class="row justify-content-md-center">
+            <form action="" , method="post">{% csrf_token %}
+
+                <div class="form-group" style="text-align: left;">
+                    <label for="account">帳號:</label>
+                    <input type="text" id="account" class="form-control-sm" name="account" value="{{ account }}"><br>
+                    <label for="password">密碼:</label>
+                    <input type="password" id="password" class="form-control-sm" name="password"
+                        value="{{ password }}"><br>
+                    <label for="character">角色:</label>
+                    <select id="character" class="form-control-sm" name="character">
+                        <option value="cloud">雲端</option>
+                        <option value="self">個人</option>
+                    </select><br>
+                    <label for="ticket_type">類型:</label>
+                    <select id="ticket_type" class="form-control-sm" name="ticket_type">
+                        <option value="all">全部</option>
+                        <option value="advanced">預先通知派工單</option>
+                        <option value="assigned">已轉派派工單</option>
+                        <option value="processing">處理中派工單</option>
+                        <option value="finished">完成待結派工單</option>
+                        <option value="special">特殊申請派工單</option>
+                    </select><br>
+                    <label for="add_file_url">PDF 連結:</label>
+                    <select id="add_file_url" class="form-control-sm" name="add_file_url">
+                        <option value="false">否</option>
+                        <option value="true">是</option>
+                    </select><br>
+                    <label for="join_ticket_detail">加入細項:</label>
+                    <select id="join_ticket_detail" class="form-control-sm" name="join_ticket_detail">
+                        <option value="true">是</option>
+                        <option value="false">否</option>
+                    </select>
+                    <br>
+                    <button type="submit" class="btn btn-secondary">送出</button>
+                </div>
+            </form>
+        </div>
+        <div class="row justify-content-md-center">
+            {% if message %}
+            <h4>{{ message }}</h4>
+            {% endif %}
+        </div>
+
+        {% if result %}
+        {% for key, value in result.items %}
+        {% if key == 'advanced' %}
+        <h2>預先通知派工單</h2>
+        {% endif %}
+        {% if key == 'assigned' %}
+        <h2>已轉派派工單</h2>
+        {% endif %}
+        {% if key == 'processing' %}
+        <h2>處理中派工單</h2>
+        {% endif %}
+        {% if key == 'finished' %}
+        <h2>完成待結派工單</h2>
+        {% endif %}
+        {% if key == 'special' %}
+        <h2>特殊申請派工單</h2>
+        {% endif %}
+        {{ value|safe }}
+        {% endfor %}
+        {% endif %}
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
 </body>
 
 </html>
