@@ -20,7 +20,6 @@ def index(request):
             password = request.POST.get('password')
             context['password'] = password
             character = request.POST.get('character')
-            context['character'] = request.POST.get('character')
             ticket_type = request.POST.get('ticket_type')
             add_file_url = (request.POST.get('add_file_url') == 'true')
             join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
