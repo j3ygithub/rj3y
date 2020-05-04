@@ -30,7 +30,7 @@ def index(request):
                 character_id = '20'
             session = login(account=account, password=password)
         except:
-            context['message'] = 'Login failed'
+            context['message'] = 'Login failed.'
         try:
             response_dashboard = request_dashboard(session=session, character_id=character_id)
             ticket_tables = produce_ticket_tables(html=response_dashboard.text)
@@ -82,7 +82,7 @@ def index(request):
             context['result'] = result
             context['message'] = 'Finished.'
         except:
-            context['message'] = 'Joining ticket list with detail failed.'
+            context['message'] = 'Failed.'
         return render(request, 'ticket/index.html', context)
 
 def login(account, password):
@@ -157,6 +157,8 @@ def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
             method = 'get_Disp_DetailCons'
             if ticket_type == 'finished':
                 method = 'get_Disp_DetailCons_Finish'
+            if ticket_type == 'assigned':
+                method = 'get_Disp_DetailConsAccept'
             data = {
                 'method': method,
                 'Disp_Cons_Seq': character_id,
