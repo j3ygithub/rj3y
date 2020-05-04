@@ -124,7 +124,8 @@ def use_first_row_as_title(dataframe):
 
 def clean_data(dataframe):
     for index, row in dataframe.iterrows():
-        row['單號'] = row['單號'].replace(' (Delay)', '')
+        if ' (Delay)' in row['單號']:
+            row['單號'] = row['單號'][:row['單號'].index(' (Delay)')]
     return dataframe
 
 def add_column_file_url(dataframe, session):
