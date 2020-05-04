@@ -10,50 +10,51 @@
 </head>
 
 <body>
-    <div class="container-fluid" style="padding: 30px; font-family: Georgia, 'Times New Roman', Times, serif;">
+    <div class="container-fluid" style="padding: 30px;font-family: Georgia, 'Times New Roman', Times, serif;">
         <div class="row justify-content-md-center">
             <h1>Join And Print | Ticket</h1>
         </div>
         <br>
         <div class="row justify-content-md-center" style="font-size: larger;">
             <div class="col"></div>
-            <div class="col-md-auto" style="border-width:2px; border-style:solid; border-color:rgb(150, 150, 150) ; padding:45px;">
-            <form action="" , method="post">{% csrf_token %}
-                <div class="form-group" style="text-align: left;">
-                    <label for="account">帳號:</label>
-                    <input type="text" id="account" class="form-control" name="account" value="{{ account }}">
-                    <label for="password">密碼:</label>
-                    <input type="password" id="password" class="form-control" name="password"
-                        value="{{ password }}">
-                    <label for="character">角色:</label>
-                    <select id="character" class="form-control" name="character">
-                        <option value="cloud">雲端</option>
-                        <option value="self">個人</option>
-                    </select>
-                    <label for="ticket_type">類型:</label>
-                    <select id="ticket_type" class="form-control" name="ticket_type">
-                        <option value="all">全部</option>
-                        <option value="advanced">預先通知派工單</option>
-                        <option value="assigned">已轉派派工單</option>
-                        <option value="processing">處理中派工單</option>
-                        <option value="finished">完成待結派工單</option>
-                        <option value="special">特殊申請派工單</option>
-                    </select>
-                    <label for="add_file_url">加入 PDF 連結:</label>
-                    <select id="add_file_url" class="form-control" name="add_file_url">
-                        <option value="false">否</option>
-                        <option value="true">是</option>
-                    </select>
-                    <label for="join_ticket_detail">加入細項:</label>
-                    <select id="join_ticket_detail" class="form-control" name="join_ticket_detail">
-                        <option value="true">是</option>
-                        <option value="false">否</option>
-                    </select>
-                    <br>
-                    <button type="submit" class="btn btn-secondary">送出</button>
-                </div>
-                
-            </form>
+            <div class="col-md-auto"
+                style="border-width:2px; border-style:solid; border-color:rgb(150, 150, 150); padding:45px;">
+                <form action="" method="post">{% csrf_token %}
+                    <div class="form-group" style="text-align: left;">
+                        <label for="account">帳號:</label>
+                        <input type="text" id="account" class="form-control" name="account" value="{{ account }}">
+                        <label for="password">密碼:</label>
+                        <input type="password" id="password" class="form-control" name="password"
+                            value="{{ password }}">
+                        <label for="character">角色:</label>
+                        <select id="character" class="form-control" name="character">
+                            <option value="cloud">雲端</option>
+                            <option value="self">個人</option>
+                        </select>
+                        <label for="ticket_type">類型:</label>
+                        <select id="ticket_type" class="form-control" name="ticket_type">
+                            <option value="all">全部</option>
+                            <option value="advanced">預先通知派工單</option>
+                            <option value="assigned">已轉派派工單</option>
+                            <option value="processing">處理中派工單</option>
+                            <option value="finished">完成待結派工單</option>
+                            <option value="special">特殊申請派工單</option>
+                        </select>
+                        <label for="join_ticket_detail">加入細項:</label>
+                        <select id="join_ticket_detail" class="form-control" name="join_ticket_detail">
+                            <option value="true">是</option>
+                            <option value="false">否</option>
+                        </select>
+                        <label for="add_file_url">加入 PDF 連結:</label>
+                        <select id="add_file_url" class="form-control" name="add_file_url">
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                        <br>
+                        <button type="submit" class="btn btn-secondary">送出</button>
+                    </div>
+
+                </form>
             </div>
             <div class="col"></div>
         </div>
