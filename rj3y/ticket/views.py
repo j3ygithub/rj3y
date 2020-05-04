@@ -43,7 +43,7 @@ def index(request):
             elif add_file_url and ticket_type == 'all':
                 ticket_tables = {key:add_column_file_url(value, session=session) for key, value in ticket_tables.items()}
         except:
-            context['message'] = 'Adding file url failed.'
+            context['message'] = 'Adding PDF url failed.'
         try:
             ticket_detail_tables = {}
             if join_ticket_detail and ticket_type != 'all':
