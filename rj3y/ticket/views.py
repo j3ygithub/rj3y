@@ -9,6 +9,7 @@ def index(request):
 
     context = {
         'message': '',
+        'query_param_cookie': {},
         'result': None,
     }
     if not request.POST:
@@ -16,9 +17,9 @@ def index(request):
     else:
         try:
             account = request.POST.get('account')
-            context['account'] = account
+            context['query_param_cookie']['account'] = account
             password = request.POST.get('password')
-            context['password'] = password
+            context['query_param_cookie']['password'] = password
             character = request.POST.get('character')
             ticket_type = request.POST.get('ticket_type')
             add_file_url = (request.POST.get('add_file_url') == 'true')
