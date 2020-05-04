@@ -179,3 +179,14 @@ def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
     else:
         ticket_detail_table = None
     return ticket_detail_table
+
+def get_table_titles(html):
+    soup = BeautifulSoup(html, 'lxml')
+    h2_tags = soup.select('h2')
+    h2_texts = []
+    for h2_tag in h2_tags:
+        h2_text = h2_tag.text
+        if '\xa0' in h2_text:
+            h2_text = h2_text[:h2_text.index('\xa0')]
+        h2_texts.append(h2_text)
+    return h2_texts
