@@ -58,25 +58,26 @@ def index(request):
                 left = ticket_tables[ticket_type]
                 right = ticket_detail_tables[ticket_type]
                 joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
-                result[ticket_type] = joined.to_html(justify='left')
+                result[ticket_type] = joined.to_html(justify='left', render_links=True)
             elif join_ticket_detail and ticket_type == 'all':
                 for key, value in ticket_tables.items():
                     try:
                         left = value
                         right = ticket_detail_tables[key]
                         joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
-                        result[key] = joined.to_html(justify='left')
+                        result[key] = joined.to_html(justify='left', render_links=True)
                     except:
                         pass
             elif not join_ticket_detail and ticket_type != 'all':
                 left = ticket_tables[ticket_type]
                 if len(left):
-                    result[ticket_type] = left.to_html(justify='left')
+                    result[ticket_type] = left.to_html(justify='left', render_links=True)
             elif not join_ticket_detail and ticket_type == 'all':
                 for key, value in ticket_tables.items():
                     try:
                         left = value
-                        result[key] = left.to_html(justify='left')
+                        if len(left):
+                            result[key] = left.to_html(justify='left', render_links=True)
                     except:
                         pass
             context['result'] = result
