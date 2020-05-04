@@ -36,7 +36,7 @@ def index(request):
             ticket_tables = produce_ticket_tables(html=response_dashboard.text)
             ticket_tables = {key:clean_data(use_first_row_as_title(value)) for key, value in ticket_tables.items()}
         except:
-            context['message'] = 'Request about http://202.3.168.17:8080/index.jsp failed.'
+            context['message'] = 'Request http://202.3.168.17:8080/index.jsp failed.'
         try:
             if add_file_url and ticket_type != 'all':
                 ticket_tables[ticket_type] = add_column_file_url(ticket_tables[ticket_type], session=session)
@@ -51,7 +51,7 @@ def index(request):
             elif join_ticket_detail and ticket_type == 'all':
                 ticket_detail_tables = {key:produce_ticket_detail_table(session=session, character_id=character_id, dataframe=value, ticket_type=key) for key, value in ticket_tables.items()}
         except:
-            context['message'] = 'Request about http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
+            context['message'] = 'Request http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
         try:
             result = {}
             if join_ticket_detail and ticket_type != 'all':
