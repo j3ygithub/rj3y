@@ -107,12 +107,13 @@ def request_dashboard(session, character_id):
 def produce_ticket_tables(html):
     dataframes = pandas.read_html(html)
     # take the part we want to build a dictionary
+    df_number = len(dataframes)
     ticket_tables = {
-        'advanced': dataframes[2],
-        'assigned': dataframes[3],
-        'processing': dataframes[4],
-        'finished': dataframes[5],
-        'special': dataframes[6],
+        'advanced': dataframes[df_number-5],
+        'assigned': dataframes[df_number-4],
+        'processing': dataframes[df_number-3],
+        'finished': dataframes[df_number-2],
+        'special': dataframes[df_number-1],
     }
     return ticket_tables
 
