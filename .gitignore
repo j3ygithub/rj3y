@@ -19,4 +19,3 @@ db.sqlite3
 **/migrations/*
 !**/migrations/__init__.py
 my_databases.py
-.vscode/settings.json
