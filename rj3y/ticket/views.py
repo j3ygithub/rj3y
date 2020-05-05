@@ -59,30 +59,26 @@ def index(request):
                 ticket_type_que = ticket_table_titles
             else:
                 ticket_type_que = [ticket_type]
-            if join_ticket_detail:
-                for ticket_type in ticket_type_que:
+            for ticket_type in ticket_type_que:
+                if join_ticket_detail:
                     left = ticket_tables[ticket_type]
                     right = ticket_detail_tables[ticket_type]
-                    if len(left) > 0 and len(right) > 0:
+                    if len(left) and len(right):
                         joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
-                        joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
-                        context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                     else:
-                        context['result'][ticket_type] = message_if_no_data_in_table
-            else:
-                for ticket_type in ticket_type_que:
+                        joined = pandas.DataFrame()
+                else:
                     joined = ticket_tables[ticket_type]
-                    if len(joined):
-                        joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
-                        context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
-                    else:
-                        context['result'][ticket_type] = message_if_no_data_in_table
-
-            
+                if len(joined):
+                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
+                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
+                else:
+                    context['result'][ticket_type] = message_if_no_data_in_table           
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
         return render(request, 'ticket/index.html', context)
+
 
 def login(account, password):
     url = 'http://202.3.168.17:8080/login_check.jsp'
