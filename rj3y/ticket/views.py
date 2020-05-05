@@ -10,7 +10,7 @@ def index(request):
     context = {
         'message': '',
         'query_param_cookie': {},
-        'result': None,
+        'result': {},
     }
     if not request.POST:
         return render(request, 'ticket/index.html', context)
@@ -33,10 +33,11 @@ def index(request):
             context['message'] = 'Login failed.'
         try:
             response_dashboard = request_dashboard(session=session, character_id=character_id)
-            ticket_tables = produce_ticket_tables(html=response_dashboard.text)
-            ticket_tables = {key:clean_data(use_first_row_as_title(value)) for key, value in ticket_tables.items()}
+            ticket_table_titles = get_ticket_table_titles(html=response_dashboard.text)
+            ticket_tables = get_ticket_tables(html=response_dashboard.text)
+            ticket_tables = dict(zip(ticket_table_titles, ticket_tables))                
         except:
-            context['message'] = 'Request http://202.3.168.17:8080/index.jsp failed.'
+            context['message'] = 'Parsing http://202.3.168.17:8080/Disp/DashBoard_Terminal failed.'
         try:
             if add_file_url and ticket_type != 'all':
                 ticket_tables[ticket_type] = add_column_file_url(ticket_tables[ticket_type], session=session)
@@ -53,34 +54,34 @@ def index(request):
         except:
             context['message'] = 'Request http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
         try:
-            result = {}
             if join_ticket_detail and ticket_type != 'all':
                 left = ticket_tables[ticket_type]
                 right = ticket_detail_tables[ticket_type]
-                joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
-                result[ticket_type] = joined.to_html(justify='left', render_links=True)
+                if len(left) > 0 and len(right) > 0:
+                    joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
+                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
+                else:
+                    context['result'][ticket_type] = ''
             elif join_ticket_detail and ticket_type == 'all':
-                for key, value in ticket_tables.items():
-                    try:
-                        left = value
-                        right = ticket_detail_tables[key]
-                        joined = pandas.merge(left, right, on='單號', how='outer', suffixes=('', '-細項'))
-                        result[key] = joined.to_html(justify='left', render_links=True)
-                    except:
-                        pass
+                for ticket_type in ticket_table_titles:
+                    left = ticket_tables[ticket_type]
+                    right = ticket_detail_tables[ticket_type]
+                    if len(left) > 0 and len(right) > 0:
+                        joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
+                        context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
+                    else:
+                        context['result'][ticket_type] = ''
             elif not join_ticket_detail and ticket_type != 'all':
-                left = ticket_tables[ticket_type]
-                if len(left):
-                    result[ticket_type] = left.to_html(justify='left', render_links=True)
+                if len(ticket_tables[ticket_type]):
+                    context['result'][ticket_type] = ticket_tables[ticket_type].to_html(justify='left', render_links=True)
+                else:
+                    context['result'][ticket_type] = ''
             elif not join_ticket_detail and ticket_type == 'all':
-                for key, value in ticket_tables.items():
-                    try:
-                        left = value
-                        if len(left):
-                            result[key] = left.to_html(justify='left', render_links=True)
-                    except:
-                        pass
-            context['result'] = result
+                for ticket_type in ticket_table_titles:
+                    if len(ticket_tables[ticket_type]):
+                        context['result'][ticket_type] = ticket_tables[ticket_type].to_html(justify='left', render_links=True)
+                    else:
+                        context['result'][ticket_type] = ''
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
@@ -104,19 +105,6 @@ def request_dashboard(session, character_id):
     }
     response = session.post(url=url, data=data)
     return response
-
-def produce_ticket_tables(html):
-    dataframes = pandas.read_html(html)
-    # take the part we want to build a dictionary
-    df_number = len(dataframes)
-    ticket_tables = {
-        'advanced': dataframes[df_number-5],
-        'assigned': dataframes[df_number-4],
-        'processing': dataframes[df_number-3],
-        'finished': dataframes[df_number-2],
-        'special': dataframes[df_number-1],
-    }
-    return ticket_tables
 
 def use_first_row_as_title(dataframe):
     title = dataframe.iloc[0]
@@ -150,17 +138,40 @@ def add_column_file_url(dataframe, session):
     dataframe = dataframe.assign(建置單檔案=file_urls)
     return dataframe
 
+def get_ticket_table_titles(html):
+    soup = BeautifulSoup(html, 'lxml')
+    h2_tags = soup.select('body div.content table tr td h2')
+    h2_texts = []
+    for h2_tag in h2_tags:
+        h2_text = h2_tag.text
+        if '\xa0' in h2_text:
+            h2_text = h2_text[:h2_text.index('\xa0')]
+        h2_texts.append(h2_text)
+    return h2_texts
+
+def get_ticket_tables(html):
+    soup = soup = BeautifulSoup(html, 'lxml')
+    table_tags = soup.select('body div.content table tr td div.CSSTableGenerator table')    
+    ticket_dataframes = []
+    for table_tag in table_tags:
+        ticket_dataframe = pandas.read_html(str(table_tag))[0]
+        ticket_dataframe = use_first_row_as_title(ticket_dataframe)
+        ticket_dataframe = clean_data(ticket_dataframe)
+        ticket_dataframes.append(ticket_dataframe)
+    return ticket_dataframes
+
 def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
     ticket_detail_dataframes = []
     for index, row in dataframe.iterrows():
         try:
             ticket_number = row['單號']
             url = 'http://202.3.168.17:8080/Disp/retriveDetail.jsp'
-            method = 'get_Disp_DetailCons'
-            if ticket_type == 'finished':
+            if ticket_type == '完成待結派工單':
                 method = 'get_Disp_DetailCons_Finish'
-            if ticket_type == 'assigned':
+            elif ticket_type == '已轉派派工單':
                 method = 'get_Disp_DetailConsAccept'
+            else:
+                method = 'get_Disp_DetailCons'
             data = {
                 'method': method,
                 'Disp_Cons_Seq': character_id,
@@ -177,16 +188,5 @@ def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
     if ticket_detail_dataframes:
         ticket_detail_table = pandas.concat(ticket_detail_dataframes)
     else:
-        ticket_detail_table = None
+        ticket_detail_table = pandas.DataFrame()
     return ticket_detail_table
-
-def get_table_titles(html):
-    soup = BeautifulSoup(html, 'lxml')
-    h2_tags = soup.select('h2')
-    h2_texts = []
-    for h2_tag in h2_tags:
-        h2_text = h2_tag.text
-        if '\xa0' in h2_text:
-            h2_text = h2_text[:h2_text.index('\xa0')]
-        h2_texts.append(h2_text)
-    return h2_texts

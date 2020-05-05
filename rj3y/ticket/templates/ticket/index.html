@@ -34,11 +34,11 @@
                         <label for="ticket_type">類型:</label>
                         <select id="ticket_type" class="form-control" name="ticket_type">
                             <option value="all">全部</option>
-                            <option value="advanced">預先通知派工單</option>
-                            <option value="assigned">已轉派派工單</option>
-                            <option value="processing">處理中派工單</option>
-                            <option value="finished">完成待結派工單</option>
-                            <option value="special">特殊申請派工單</option>
+                            <option value="預先通知派工單">預先通知派工單</option>
+                            <option value="已轉派派工單">已轉派派工單</option>
+                            <option value="處理中派工單">處理中派工單</option>
+                            <option value="完成待結派工單">完成待結派工單</option>
+                            <option value="特殊申請派工單">特殊申請派工單</option>
                         </select>
                         <label for="join_ticket_detail">加入細項:</label>
                         <select id="join_ticket_detail" class="form-control" name="join_ticket_detail">
@@ -67,22 +67,8 @@
 
         {% if result %}
         {% for key, value in result.items %}
-        {% if key == 'advanced' %}
-        <h2>預先通知派工單</h2>
-        {% endif %}
-        {% if key == 'assigned' %}
-        <h2>已轉派派工單</h2>
-        {% endif %}
-        {% if key == 'processing' %}
-        <h2>處理中派工單</h2>
-        {% endif %}
-        {% if key == 'finished' %}
-        <h2>完成待結派工單</h2>
-        {% endif %}
-        {% if key == 'special' %}
-        <h2>特殊申請派工單</h2>
-        {% endif %}
-        {{ value|safe }}
+            <h2>{{ key }}</h2>
+            {{ value|safe }}
         {% endfor %}
         {% endif %}
 
