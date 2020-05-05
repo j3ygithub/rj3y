@@ -66,7 +66,8 @@ def index(request):
                     result_df = ticket_tables[ticket_type]
                 if len(result_df):
                     result_df.index = pandas.RangeIndex(start=1, stop=len(result_df)+1, step=1)
-                    context['result'][ticket_type] = result_df.to_html(justify='left', render_links=True)
+                    result_df = result_df.fillna('')
+                    context['result'][ticket_type] = result_df.to_html(justify='left', col_space=30, render_links=True)
                 else:
                     context['result'][ticket_type] = message_if_no_data_in_table
             context['message'] = 'Finished.'
