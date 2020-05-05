@@ -10,19 +10,19 @@
 </head>
 
 <body>
-    <div class="container-fluid" style="padding: 30px;font-family: Georgia, 'Times New Roman', Times, serif;">
-        <div class="row justify-content-md-center">
+    <div class="container-fluid"
+        style="padding-top: 2em; padding-bottom: 2em; padding-left: 4em; padding-right: 4em; font-family: Georgia, 'Times New Roman', Times, serif;">
+        <div class="row justify-content-center" style="padding-bottom: 1em;">
             <h1>Join And Print | Ticket</h1>
         </div>
-        <br>
-        <div class="row justify-content-md-center" style="font-size: larger;">
-            <div class="col"></div>
-            <div class="col-md-auto"
-                style="border-width:2px; border-style:solid; border-color:rgb(150, 150, 150); padding-left:35px; padding-right:35px; padding-top:25px; padding-bottom:15px;">
+        <div class="row justify-content-center" style="font-size: larger;">
+            <div class="col-auto"
+                style="border-width:2px; border-style:solid; border-color:rgb(150, 150, 150); padding-left:2.5em; padding-right:2.5em; padding-top:1.5em; padding-bottom:0.5em;">
                 <form action="" method="post">{% csrf_token %}
-                    <div class="form-group" style="text-align: left;">
+                    <div class="form-group">
                         <label for="account">帳號:</label>
-                        <input type="text" id="account" class="form-control" name="account" value="{{ query_param_cookie.account }}">
+                        <input type="text" id="account" class="form-control" name="account"
+                            value="{{ query_param_cookie.account }}">
                         <label for="password">密碼:</label>
                         <input type="password" id="password" class="form-control" name="password"
                             value="{{ query_param_cookie.password }}">
@@ -53,28 +53,27 @@
                         <br>
                         <button type="submit" class="btn btn-secondary">送出</button>
                     </div>
-
                 </form>
             </div>
-            <div class="col"></div>
         </div>
-        <br>
-        <div class="row justify-content-md-center">
-        {% if message %}
+        <div class="row justify-content-center" style="padding-top: 2em">
+            {% if message %}
+            <br>
             <h4>{{ message }}</h4>
-        {% endif %}
+            {% endif %}
         </div>
-
         {% if result %}
-            {% for key, value in result.items %}
-                <br>
-                <h2>{{ key }}</h2>
-                {{ value|safe }}
-            {% endfor %}
+        {% for key, value in result.items %}
+        <div class="row justify-content-start" style="padding-top: 2em;">
+            <h2>{{ key }}</h2>
+        </div>
+        <div class="row justify-content-start">
+            {{ value|safe }}
+        </div>
+        {% endfor %}
         {% endif %}
 
     </div>
-
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
         integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
         crossorigin="anonymous"></script>

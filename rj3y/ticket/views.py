@@ -24,7 +24,7 @@ def index(request):
             ticket_type = request.POST.get('ticket_type')
             add_file_url = (request.POST.get('add_file_url') == 'true')
             join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
-            message_if_no_data_in_table = '<p>Oops, no data to show here.</p>'
+            message_if_no_data_in_table = '<h6>Oops, no data to show here.</h6>'
             if character == 'self':
                 character_id = account
             elif character == 'cloud':
