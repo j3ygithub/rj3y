@@ -60,16 +60,17 @@
         </div>
         <br>
         <div class="row justify-content-md-center">
-            {% if message %}
+        {% if message %}
             <h4>{{ message }}</h4>
-            {% endif %}
+        {% endif %}
         </div>
 
         {% if result %}
-        {% for key, value in result.items %}
-            <h2>{{ key }}</h2>
-            {{ value|safe }}
-        {% endfor %}
+            {% for key, value in result.items %}
+                <br>
+                <h2>{{ key }}</h2>
+                {{ value|safe }}
+            {% endfor %}
         {% endif %}
 
     </div>

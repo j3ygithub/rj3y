@@ -24,7 +24,7 @@ def index(request):
             ticket_type = request.POST.get('ticket_type')
             add_file_url = (request.POST.get('add_file_url') == 'true')
             join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
-            message_if_no_data_in_table = '<p>NaN</p>'
+            message_if_no_data_in_table = '<p>Oops, no data to show here.</p>'
             if character == 'self':
                 character_id = account
             elif character == 'cloud':
@@ -55,17 +55,12 @@ def index(request):
         except:
             context['message'] = 'Request http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
         try:
-            if join_ticket_detail and ticket_type != 'all':
-                left = ticket_tables[ticket_type]
-                right = ticket_detail_tables[ticket_type]
-                if len(left) > 0 and len(right) > 0:
-                    joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
-                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
-                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
-                else:
-                    context['result'][ticket_type] = message_if_no_data_in_table
-            elif join_ticket_detail and ticket_type == 'all':
-                for ticket_type in ticket_table_titles:
+            if ticket_type == 'all':
+                ticket_type_que = ticket_table_titles
+            else:
+                ticket_type_que = [ticket_type]
+            if join_ticket_detail:
+                for ticket_type in ticket_type_que:
                     left = ticket_tables[ticket_type]
                     right = ticket_detail_tables[ticket_type]
                     if len(left) > 0 and len(right) > 0:
@@ -74,21 +69,16 @@ def index(request):
                         context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                     else:
                         context['result'][ticket_type] = message_if_no_data_in_table
-            elif not join_ticket_detail and ticket_type != 'all':
-                joined = ticket_tables[ticket_type]
-                if len(joined):
-                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
-                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
-                else:
-                    context['result'][ticket_type] = message_if_no_data_in_table
-            elif not join_ticket_detail and ticket_type == 'all':
-                for ticket_type in ticket_table_titles:
+            else:
+                for ticket_type in ticket_type_que:
                     joined = ticket_tables[ticket_type]
                     if len(joined):
                         joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
                         context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                     else:
                         context['result'][ticket_type] = message_if_no_data_in_table
+
+            
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
