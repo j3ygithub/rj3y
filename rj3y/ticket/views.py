@@ -61,19 +61,14 @@ def index(request):
                 ticket_type_que = [ticket_type]
             for ticket_type in ticket_type_que:
                 if join_ticket_detail:
-                    left = ticket_tables[ticket_type]
-                    right = ticket_detail_tables[ticket_type]
-                    if len(left) and len(right):
-                        joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
-                    else:
-                        joined = pandas.DataFrame()
+                    result_df = join_safely(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
                 else:
-                    joined = ticket_tables[ticket_type]
-                if len(joined):
-                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
-                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
+                    result_df = ticket_tables[ticket_type]
+                if len(result_df):
+                    result_df.index = pandas.RangeIndex(start=1, stop=len(result_df)+1, step=1)
+                    context['result'][ticket_type] = result_df.to_html(justify='left', render_links=True)
                 else:
-                    context['result'][ticket_type] = message_if_no_data_in_table           
+                    context['result'][ticket_type] = message_if_no_data_in_table
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
@@ -184,3 +179,10 @@ def produce_ticket_detail_table(session, character_id, dataframe, ticket_type):
     else:
         ticket_detail_table = pandas.DataFrame()
     return ticket_detail_table
+
+def join_safely(left, right, on, how, suffixes):
+    if len(left) and len(right):
+        df = pandas.merge(left=left, right=right, on=on, how=how, suffixes=suffixes)
+    else:
+        df = pandas.DataFrame()
+    return df
