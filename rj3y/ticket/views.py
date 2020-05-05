@@ -24,6 +24,7 @@ def index(request):
             ticket_type = request.POST.get('ticket_type')
             add_file_url = (request.POST.get('add_file_url') == 'true')
             join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
+            message_if_no_data_in_table = '<p>NaN</p>'
             if character == 'self':
                 character_id = account
             elif character == 'cloud':
@@ -59,29 +60,35 @@ def index(request):
                 right = ticket_detail_tables[ticket_type]
                 if len(left) > 0 and len(right) > 0:
                     joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
+                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
                     context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                 else:
-                    context['result'][ticket_type] = ''
+                    context['result'][ticket_type] = message_if_no_data_in_table
             elif join_ticket_detail and ticket_type == 'all':
                 for ticket_type in ticket_table_titles:
                     left = ticket_tables[ticket_type]
                     right = ticket_detail_tables[ticket_type]
                     if len(left) > 0 and len(right) > 0:
                         joined = pandas.merge(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
+                        joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
                         context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                     else:
-                        context['result'][ticket_type] = ''
+                        context['result'][ticket_type] = message_if_no_data_in_table
             elif not join_ticket_detail and ticket_type != 'all':
-                if len(ticket_tables[ticket_type]):
-                    context['result'][ticket_type] = ticket_tables[ticket_type].to_html(justify='left', render_links=True)
+                joined = ticket_tables[ticket_type]
+                if len(joined):
+                    joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
+                    context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                 else:
-                    context['result'][ticket_type] = ''
+                    context['result'][ticket_type] = message_if_no_data_in_table
             elif not join_ticket_detail and ticket_type == 'all':
                 for ticket_type in ticket_table_titles:
-                    if len(ticket_tables[ticket_type]):
-                        context['result'][ticket_type] = ticket_tables[ticket_type].to_html(justify='left', render_links=True)
+                    joined = ticket_tables[ticket_type]
+                    if len(joined):
+                        joined.index = pandas.RangeIndex(start=1, stop=len(joined)+1, step=1)
+                        context['result'][ticket_type] = joined.to_html(justify='left', render_links=True)
                     else:
-                        context['result'][ticket_type] = ''
+                        context['result'][ticket_type] = message_if_no_data_in_table
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
@@ -157,6 +164,7 @@ def get_ticket_tables(html):
         ticket_dataframe = pandas.read_html(str(table_tag))[0]
         ticket_dataframe = use_first_row_as_title(ticket_dataframe)
         ticket_dataframe = clean_data(ticket_dataframe)
+        ticket_dataframe.index = pandas.RangeIndex(start=1, stop=len(ticket_dataframe)+1, step=1)
         ticket_dataframes.append(ticket_dataframe)
     return ticket_dataframes
 
