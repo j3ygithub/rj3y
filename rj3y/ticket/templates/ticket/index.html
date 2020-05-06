@@ -18,41 +18,11 @@
         <div class="row justify-content-center" style="font-size: larger;">
             <div class="col-auto"
                 style="border-width:2px; border-style:solid; border-color:rgb(150, 150, 150); padding-left:2.5em; padding-right:2.5em; padding-top:1.5em; padding-bottom:0.5em;">
-                <form action="" method="post">{% csrf_token %}
-                    <div class="form-group">
-                        <label for="account">帳號:</label>
-                        <input type="text" id="account" class="form-control" name="account"
-                            value="{{ query_param_cookie.account }}">
-                        <label for="password">密碼:</label>
-                        <input type="password" id="password" class="form-control" name="password"
-                            value="{{ query_param_cookie.password }}">
-                        <label for="character">角色:</label>
-                        <select id="character" class="form-control" name="character">
-                            <option value="cloud">雲端</option>
-                            <option value="self">個人</option>
-                        </select>
-                        <label for="ticket_type">類型:</label>
-                        <select id="ticket_type" class="form-control" name="ticket_type">
-                            <option value="all">全部</option>
-                            <option value="預先通知派工單">預先通知派工單</option>
-                            <option value="已轉派派工單">已轉派派工單</option>
-                            <option value="處理中派工單">處理中派工單</option>
-                            <option value="完成待結派工單">完成待結派工單</option>
-                            <option value="特殊申請派工單">特殊申請派工單</option>
-                        </select>
-                        <label for="join_ticket_detail">加入細項:</label>
-                        <select id="join_ticket_detail" class="form-control" name="join_ticket_detail">
-                            <option value="true">是</option>
-                            <option value="false">否</option>
-                        </select>
-                        <label for="add_file_url">加入 PDF 連結:</label>
-                        <select id="add_file_url" class="form-control" name="add_file_url">
-                            <option value="false">否</option>
-                            <option value="true">是</option>
-                        </select>
-                        <div style="padding-top: 1em;">
-                            <button type="submit" class="btn btn-secondary">送出</button>
-                        </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <div style="padding-top: 1em;padding-bottom: 1em;">
+                        <input type="submit" class="btn btn-secondary" value="Submit">
                     </div>
                 </form>
             </div>

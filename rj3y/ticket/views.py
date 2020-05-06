@@ -2,37 +2,35 @@ from django.shortcuts import render
 import requests
 import pandas
 from bs4 import BeautifulSoup
+from .forms import TicketForm
 # Create your views here.
 
 
 def index(request):
 
     context = {
-        'message': '',
         'query_param_cookie': {},
+        'message': '',
         'result': {},
+        'form': TicketForm(),
     }
-    if not request.POST:
-        return render(request, 'ticket/index.html', context)
-    else:
+    if request.method == 'POST':
+        form = TicketForm(request.POST)
+        context['form'] = form
+        if form.is_valid():
+            account = form.cleaned_data['account']
+            password = form.cleaned_data['password']
+            character = form.cleaned_data['character']
+            ticket_type = form.cleaned_data['ticket_type']
+            join_detail = form.cleaned_data['join_detail'] == 'true'
+            add_pdf_url = form.cleaned_data['add_pdf_url'] == 'true'
         try:
-            account = request.POST.get('account')
-            context['query_param_cookie']['account'] = account
-            password = request.POST.get('password')
-            context['query_param_cookie']['password'] = password
-            character = request.POST.get('character')
-            ticket_type = request.POST.get('ticket_type')
-            add_file_url = (request.POST.get('add_file_url') == 'true')
-            join_ticket_detail = (request.POST.get('join_ticket_detail') == 'true')
             message_if_no_data_in_table = '<h6>Oops, no data to show here.</h6>'
             if character == 'self':
                 character_id = account
             elif character == 'cloud':
                 character_id = '20'
             session = login(account=account, password=password)
-        except:
-            context['message'] = 'Login failed.'
-        try:
             response_dashboard = request_dashboard(session=session, character_id=character_id)
             ticket_table_titles = get_ticket_table_titles(html=response_dashboard.text)
             ticket_tables = get_ticket_tables(html=response_dashboard.text)
@@ -40,17 +38,17 @@ def index(request):
         except:
             context['message'] = 'Parsing http://202.3.168.17:8080/Disp/DashBoard_Terminal failed.'
         try:
-            if add_file_url and ticket_type != 'all':
+            if add_pdf_url and ticket_type != 'all':
                 ticket_tables[ticket_type] = add_column_file_url(ticket_tables[ticket_type], session=session)
-            elif add_file_url and ticket_type == 'all':
+            elif add_pdf_url and ticket_type == 'all':
                 ticket_tables = {key:add_column_file_url(value, session=session) for key, value in ticket_tables.items()}
         except:
             context['message'] = 'Adding PDF url failed.'
         try:
             ticket_detail_tables = {}
-            if join_ticket_detail and ticket_type != 'all':
+            if join_detail and ticket_type != 'all':
                 ticket_detail_tables[ticket_type] = produce_ticket_detail_table(session=session, character_id=character_id, dataframe=ticket_tables[ticket_type], ticket_type=ticket_type)
-            elif join_ticket_detail and ticket_type == 'all':
+            elif join_detail and ticket_type == 'all':
                 ticket_detail_tables = {key:produce_ticket_detail_table(session=session, character_id=character_id, dataframe=value, ticket_type=key) for key, value in ticket_tables.items()}
         except:
             context['message'] = 'Request http://202.3.168.17:8080/Disp/retriveDetail.jsp failed.'
@@ -60,7 +58,7 @@ def index(request):
             else:
                 ticket_type_que = [ticket_type]
             for ticket_type in ticket_type_que:
-                if join_ticket_detail:
+                if join_detail:
                     result_df = join_safely(left=ticket_tables[ticket_type], right=ticket_detail_tables[ticket_type], on='單號', how='outer', suffixes=('', '-細項'))
                 else:
                     result_df = ticket_tables[ticket_type]
@@ -73,7 +71,7 @@ def index(request):
             context['message'] = 'Finished.'
         except:
             context['message'] = 'Failed.'
-        return render(request, 'ticket/index.html', context)
+    return render(request, 'ticket/index.html', context)
 
 
 def login(account, password):
