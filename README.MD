@@ -33,7 +33,7 @@ python C:\Users\jimmy_lin\repos\rj3y\manage.py runserver
 
 ## Meta
 
-Jimmy Lin – b00502013@gmail.com
+Jimmy Lin <b00502013@gmail.com>
 
 Distributed under the MIT license. See ``LICENSE`` for more information.
 
