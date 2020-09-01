@@ -2,8 +2,8 @@
 A project about using python package requests to ask for data and show it on web.
 
 <p float="left">
-  <img src="https://github.com/j3ygithub/rj3y/blob/master/docs/screenshots/screenshot1.png?" width="20%">
-  <img src="https://github.com/j3ygithub/rj3y/blob/master/docs/screenshots/screenshot2.png?" width="60%">
+  <img src="https://github.com/j3ygithub/rj3y/blob/master/docs/images/screenshot1.png?" width="20%">
+  <img src="https://github.com/j3ygithub/rj3y/blob/master/docs/images/screenshot2.png?" width="60%">
 </p>
 
 
