@@ -1,16 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
-# Distribution / packaging
-/lib/
-
-# Some python script files
-/bin/
-/Scripts/
-
-# Virtual environment config file
-/pyvenv.cfg
-
 # Mac things
 .DS_Store
 
