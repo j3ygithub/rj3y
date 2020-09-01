@@ -6,6 +6,7 @@ A project about using python package requests to ask for data and show it on web
 OS X & Linux:
 
 env dir path: /Users/jimmy_lin/envs
+
 repo dir path: /Users/jimmy_lin/repos
 
 ```
@@ -19,6 +20,7 @@ python /Users/jimmy_lin/repos/rj3y/manage.py runserver
 Windows:
 
 env dir path: C:\Users\jimmy_lin\envs
+
 repo dir path: C:\Users\jimmy_lin\repos
 
 ```
