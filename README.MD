@@ -1,13 +1,9 @@
 # rj3y
 A project about using python package requests to ask for data and show it on web.
 
-## Installation & Run
+## Installation
 
 OS X & Linux:
-
-env dir path: /Users/jimmy_lin/envs
-
-repo dir path: /Users/jimmy_lin/repos
 
 ```
 python3 -m venv /Users/jimmy_lin/envs/rj3y
@@ -18,10 +14,6 @@ python /Users/jimmy_lin/repos/rj3y/manage.py runserver
 ```
 
 Windows:
-
-env dir path: C:\Users\jimmy_lin\envs
-
-repo dir path: C:\Users\jimmy_lin\repos
 
 ```
 python -m venv C:\Users\jimmy_lin\envs\rj3y
