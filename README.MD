@@ -7,8 +7,32 @@ A project about using python package requests to ask for data and show it on web
 
 OS X & Linux:
 
+cd to your venv directory
 ```
-npm install my-crazy-module --save
+cd C:\Users\jimmy_lin\envs
+```
+
+make a venv and activate it
+```
+python -m venv rj3y
+rj3y\Scripts\activate
+```
+
+cd to your repo directory
+```
+cd C:\Users\jimmy_lin\repos
+```
+
+clone this repo & install related packages
+```
+git clone https://github.com/j3ygithub/rj3y
+cd rj3y
+pip install -r requirements.txt
+```
+
+Run
+```
+Python manage.py runserver
 ```
 
 Windows:
